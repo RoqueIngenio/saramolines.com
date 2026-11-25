@@ -1,6 +1,6 @@
-# Robot de la web saramolines.com (PREPARADO, AÚN SIN ESTRENAR)
+# Robot de la web saramolines.com
 # Lee Notion (textos y artículos), genera la web y la publica en GitHub Pages.
-# Empezará a funcionar cuando esta carpeta se suba a un repositorio de GitHub con el secreto NOTION_TOKEN.
+# Repositorio: RoqueIngenio/saramolines.com, con el secreto NOTION_TOKEN.
 # Se ejecutará:
 #   - cada día a las 6:30 UTC (8:30 en horario de verano, 7:30 en invierno)
 #   - cada vez que se suba un cambio al repositorio
@@ -49,6 +49,17 @@ jobs:
 
       - name: Publicar
         id: despliegue
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      # A veces GitHub tarda en registrar la web recién generada y la publicación falla
+      # («No artifacts named github-pages»). Se espera un minuto y se reintenta una vez.
+      - name: Esperar antes de reintentar
+        if: steps.despliegue.outcome == 'failure'
+        run: sleep 60
+
+      - name: Reintentar la publicación
+        if: steps.despliegue.outcome == 'failure'
         uses: actions/deploy-pages@v4
 
       # GitHub apaga las ejecuciones programadas tras 60 días sin cambios en el repositorio.
